@@ -9,8 +9,9 @@ import (
 )
 
 type Config struct {
-	Auth    auth
-	Ecowatt ecowatt
+	Auth     auth
+	Influxdb influxdb
+	Ecowatt  ecowatt
 }
 
 type auth struct {
@@ -20,6 +21,13 @@ type auth struct {
 
 type ecowatt struct {
 	URI string `env:"ECOWATT_URI,required"`
+}
+
+type influxdb struct {
+	Org   string `env:"INFLUXDB_ORG,required"`
+	Token string `env:"INFLUXDB_TOKEN,required"`
+	Host  string `env:"INFLUXDB_HOST,required"`
+	Port  string `env:"INFLUXDB_PORT,required"`
 }
 
 var (
@@ -39,7 +47,7 @@ func GetEnv() *Config {
 }
 
 func getInstance() (*Config, error) {
-	environment := os.Getenv("ECOWATT_ROUTINE_ENV")
+	environment := os.Getenv("RTE_ETL_ROUTINE_ENV")
 	if environment == "" {
 		environment = "development"
 	}
@@ -58,8 +66,9 @@ func getInstance() (*Config, error) {
 		return nil, err
 	}
 	cfg := Config{}
-	err = env.Parse(&cfg.Auth)    // 👈 Parse environment variables into `config`
-	err = env.Parse(&cfg.Ecowatt) // 👈 Parse environment variables into `config`
+	err = env.Parse(&cfg.Auth)
+	err = env.Parse(&cfg.Ecowatt)
+	err = env.Parse(&cfg.Influxdb)
 	if err != nil {
 		log.Fatalf("unable to parse ennvironment variables: %e", err)
 	}
